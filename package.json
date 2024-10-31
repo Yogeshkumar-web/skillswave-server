@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-   "start": "node dist/index.js",
-   "dev": "nodemon -x ts-node --transpile-only src/index.ts",  
-   "clean": "rm -rf dist",
-   "build": "npm run clean && tsc" 
+    "start": "node dist/index.js",
+    "dev": "nodemon -x ts-node --transpile-only src/index.ts",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -29,8 +28,10 @@
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
