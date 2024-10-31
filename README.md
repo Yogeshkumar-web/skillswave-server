@@ -104,4 +104,9 @@ cd <repository-directory>
    git push
    ```
 
-By following these steps, you should have all packages updated to their latest versions, and your project should be ready with a modern setup. Let me know if you'd like more guidance on handling specific package issues after an upgrade!
+# Remove and add new origin
+
+git remote remove origin
+git remote add origin <new-repository-url>
+git remote -v
+git push -u origin main
