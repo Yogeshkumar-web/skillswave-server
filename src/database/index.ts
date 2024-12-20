@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger"
 import envVariables from "../config";
+import { DB_NAME } from "../utils/constants";
 
 
 const connectDB = async (): Promise<void> => {
   const dbURI = envVariables.database.url
-  await mongoose.connect(dbURI);
+  await mongoose.connect(`${dbURI}/${DB_NAME}`);
 };
 
 const connectWithRetry = async (retries = 5, delay = 3000): Promise<void> => {

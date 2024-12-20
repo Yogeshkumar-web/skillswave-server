@@ -9,6 +9,7 @@ if (envFound.error) {
 
 // Define validation schema
 const envSchema = Joi.object({
+  CLIENT_URL: Joi.string().required(),
   PORT: Joi.number().default(8080),
   API_PREFIX: Joi.string().default("/api"),
   MORGAN: Joi.string().default("common"),
@@ -42,7 +43,8 @@ export default {
     port: validatedEnv.PORT,
     apiPrefix: validatedEnv.API_PREFIX,
     morgan: validatedEnv.MORGAN,
-  },
+    clientUrl: validatedEnv.CLIENT_URL
+  },    
   cors: {
     origin: validatedEnv.CORS_ORIGIN,
   },
