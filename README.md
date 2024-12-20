@@ -110,3 +110,53 @@ git remote remove origin
 git remote add origin <new-repository-url>
 git remote -v
 git push -u origin main
+
+---
+
+### To push a cloned repository into another GitHub account, follow these steps:
+
+---
+
+### 1. **Clone the Repository (If Not Done Already):**
+   ```bash
+   git clone <original-repo-URL>
+   cd <repository-folder>
+   ```
+
+---
+
+### 2. **Remove the Old Remote:**
+   The cloned repository is linked to the original repository via a "remote." To push to a new account, remove this link:
+   ```bash
+   git remote remove origin
+   ```
+
+---
+
+### 3. **Add a New Remote:**
+   Add the URL of the new repository from your other GitHub account. Make sure you've already created an empty repository in the new account.
+   ```bash
+   git remote add origin <new-repo-URL>
+   ```
+
+---
+
+### 4. **Verify the Remote:**
+   Check that the new remote is correctly set up.
+   ```bash
+   git remote -v
+   ```
+
+   The output should show the new repository's URL.
+
+---
+
+### 5. **Push the Code to the New Repository:**
+   Push the code to the new GitHub repository:
+   ```bash
+   git push -u origin main
+   ```
+   Replace `main` with the default branch name if it's something else (e.g., `master`).
+
+---
+

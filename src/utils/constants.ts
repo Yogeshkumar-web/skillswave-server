@@ -1,1 +1,1 @@
-export const DB_NAME = "name-db";
+export const DB_NAME = "skillswave-db";

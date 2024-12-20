@@ -3,9 +3,13 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import morgan from "morgan";
-import config from "./config";
+import envVariables from "./config/env-variables";
 
 const app = express();
+
+app.use("/", (req,res) => {
+  res.send("Server is running!")
+})
 
 app.use(
   cors({
@@ -20,7 +24,7 @@ app.use(
     contentSecurityPolicy: false,
   })
 );
-app.use(morgan(`${config.logs.morgan}`));
+app.use(morgan(`${envVariables.MORGAN}`));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
@@ -29,6 +33,6 @@ app.use(cookieParser());
 //routes import
 
 //routes declaration
-app.use("/api/v1/users", () => {});
+app.use(`${envVariables.API_PREFIX}`, () => {});
 
 export { app };

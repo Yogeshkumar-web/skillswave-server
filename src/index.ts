@@ -1,11 +1,11 @@
 import { app } from "./app";
-import config from "./config";
+import envVariables from "./config/env-variables";
 import connectDB from "./database";
 
 connectDB()
   .then(() => {
-    app.listen(config.app.port || 8080, () => {
-      console.log(`⚙️ Server is running at port : ${config.app.port}`);
+    app.listen(envVariables.PORT || 8080, () => {   
+      console.log(`⚙️ Server is running at port : ${envVariables.PORT}`);
     });
   })
   .catch((err) => {
