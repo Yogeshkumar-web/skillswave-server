@@ -8,8 +8,8 @@ const startServer = async () => {
     await connectWithRetry(); // Retry logic for database connection
     logger.info("✅ MongoDB connected successfully.");
 
-    const server = app.listen(envVariables.PORT || 8080, () => {
-      logger.info(`⚙️ Server is running at port : ${envVariables.PORT}`);
+    const server = app.listen(envVariables.app.port || 8080, () => {
+      logger.info(`⚙️ Server is running at port : ${envVariables.app.port}`);
     });
 
     // Graceful shutdown handlers
