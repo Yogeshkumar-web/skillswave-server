@@ -1,19 +1,32 @@
 import mongoose from "mongoose";
-import { DB_NAME } from "../utils/constants";
-import envVariable from "../config/env-variables";
+import logger from "../utils/logger"
+import envVariables from "../config";
 
-const connectDB = async () => {
-  try {
-    const connectionInstance = await mongoose.connect(
-      `${envVariable.DATABASE_URL}/${DB_NAME}`
-    );
-    console.log(
-      `\n MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`
-    );
-  } catch (error) {
-    console.log("MONGODB connection FAILED ", error);
-    process.exit(1);
+
+const connectDB = async (): Promise<void> => {
+  const dbURI = envVariables.database.url
+  await mongoose.connect(dbURI);
+};
+
+const connectWithRetry = async (retries = 5, delay = 3000): Promise<void> => {
+  while (retries) {
+    try {
+      await connectDB();
+      logger.info("✅ MongoDB connected successfully.");
+      return;
+    } catch (err) {
+      retries -= 1;
+      logger.error(`❌ MongoDB connection failed. Retries left: ${retries}`);
+      if (retries === 0) throw err;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 };
 
-export default connectDB;
+const disconnectDB = async (): Promise<void> => {
+  await mongoose.connection.close();
+  logger.info("✅ MongoDB connection closed.");
+};
+
+export default connectWithRetry;
+export { disconnectDB };

@@ -3,36 +3,47 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import morgan from "morgan";
-import envVariables from "./config/env-variables";
+import envVariables from "./config";
 
 const app = express();
 
-app.use("/", (req,res) => {
-  res.send("Server is running!")
-})
+// Morgan for logging
+const morganFormat = envVariables.app.morgan || "common";
+app.use(morgan(morganFormat));
 
+// Security headers with Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: false, 
+  })
+);
+
+// Enable CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: envVariables.cors.origin,
     credentials: true,
   })
 );
 
-// middlewares
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-  })
-);
-app.use(morgan(`${envVariables.MORGAN}`));
+// Body parsers for JSON and URL-encoded data
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+
+// Static files
 app.use(express.static("public"));
+
+// Cookie parser
 app.use(cookieParser());
 
-//routes import
+// Root route
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
 
-//routes declaration
-app.use(`${envVariables.API_PREFIX}`, () => {});
+// API routes (Placeholder)
+app.use(`${envVariables.app.apiPrefix}`, () => {
+  // Define your routes here
+});
 
 export { app };
