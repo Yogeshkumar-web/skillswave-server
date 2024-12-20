@@ -1,18 +1,32 @@
-import { Router } from "express";
-import User from "../models/user.model";
+import { Router } from 'express';
+import {
+  getUserProfile,
+  loginUser,
+  logoutUser,
+  registerUser,
+  verifyEmail,
+} from '../controllers/user.controller';
+import { authenticateJwt } from '../passport/passport-jwt-strategy';
 
 const router = Router();
+const privateRoutes = Router();
 
-router.get("/", async (req, res) => {
-  const users = await User.find();
-  res.json(users);
-});
+// Apply middleware to all private routes
+privateRoutes.use(authenticateJwt);
 
-router.post("/", async (req, res) => {
-  const { name, email, password } = req.body;
-  const newUser = new User({ name, email, password });
-  await newUser.save();
-  res.status(201).json(newUser);
-});
+// Public Routes
+router.route('/register').post(registerUser); 
+router.route('/verify-email').post(verifyEmail); 
+router.route("/login").post(loginUser)
+
+
+// Private Routes
+privateRoutes.route('/logout').post(logoutUser);
+privateRoutes.route('/profile').get(getUserProfile);
+privateRoutes.route("/logout").post(logoutUser)
+privateRoutes.route("/profile").get(getUserProfile)
+
+// merge private route into main route
+router.use(privateRoutes);
 
 export default router;
