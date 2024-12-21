@@ -4,7 +4,8 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import envVariables from './config';
-import userRouter from './routes/user.route'
+import userRouter from './routes/user.route';
+import courseRouter from './routes/course.route';
 
 const app = express();
 
@@ -50,7 +51,8 @@ app.get('/', (req, res) => {
   res.send('Server is running!');
 });
 
-// API routes 
+// API routes
 app.use(`${envVariables.app.apiPrefix}`, userRouter);
+app.use(`${envVariables.app.apiPrefix}`, courseRouter);
 
 export { app };

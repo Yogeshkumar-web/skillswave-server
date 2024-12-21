@@ -5,6 +5,7 @@ import envVariables from '../config';
 
 // Define the User document interface
 export interface IUser extends Document {
+  userId: string;
   fullName: string;
   email: string;
   password?: string;
@@ -12,9 +13,11 @@ export interface IUser extends Document {
   provider?: string;
   providerId?: string;
   image?: string;
-  role: string;
-  posts: Schema.Types.ObjectId[];
-  comments: Schema.Types.ObjectId[];
+  role: 'admin' | 'user' | 'writer';
+  posts: mongoose.Types.ObjectId[];
+  comments: mongoose.Types.ObjectId[];
+  enrolledCourses: mongoose.Types.ObjectId[];
+  transactions: mongoose.Types.ObjectId[];
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): string;
   generateRefreshToken(): string;
@@ -22,6 +25,7 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
+    userId: { type: String, required: true },
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
@@ -32,6 +36,8 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: ['admin', 'user', 'writer'], default: 'user' },
     posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+    enrolledCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }], // Relationship with Course
+    transactions: [{ type: Schema.Types.ObjectId, ref: 'Transaction' }], // Relationship with Transaction
   },
   { timestamps: true }
 );
@@ -50,10 +56,8 @@ userSchema.methods.isPasswordCorrect = async function (
   password: string
 ): Promise<boolean> {
   try {
-    // Compare the provided password with the hashed password stored in the database
     return await bcrypt.compare(password, this.password);
   } catch (error) {
-    // Log the error for debugging if needed
     console.error('Error comparing passwords:', error);
     throw new Error('Password comparison failed');
   }
@@ -68,10 +72,8 @@ userSchema.methods.generateAccessToken = function (): string {
         email: this.email,
         userName: this.userName,
       },
-      envVariables.tokens.accessToken.secret as string, // cast to string to satisfy TypeScript
-      {
-        expiresIn: envVariables.tokens.accessToken.expiry,
-      }
+      envVariables.tokens.accessToken.secret as string,
+      { expiresIn: envVariables.tokens.accessToken.expiry }
     );
   } catch (error) {
     console.error('Error generating access token:', error);
@@ -81,12 +83,10 @@ userSchema.methods.generateAccessToken = function (): string {
 
 // Instance method to generate a refresh token
 userSchema.methods.generateRefreshToken = function (): string {
-  if (!envVariables.tokens.refreshToken.secret)
-    throw new Error('Refresh token secret missing');
   try {
     return jwt.sign(
       { _id: this._id },
-      envVariables.tokens.refreshToken.secret as string, // Cast to string for TypeScript compatibility
+      envVariables.tokens.refreshToken.secret as string,
       { expiresIn: envVariables.tokens.refreshToken.expiry }
     );
   } catch (error) {
