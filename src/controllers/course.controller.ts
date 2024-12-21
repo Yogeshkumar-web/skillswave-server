@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Course from '../models/course.model';
+import { Course } from '../models/course.model';
 import { v4 as uuidv4 } from 'uuid';
 import { asyncHandler } from '../utils/async-handler';
 import apiResponse from '../utils/api-response';
