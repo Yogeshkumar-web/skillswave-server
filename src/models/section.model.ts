@@ -46,6 +46,4 @@ const sectionSchema = new Schema<ISection>(
 );
 
 // Section Model
-const Section = model<ISection>('Section', sectionSchema);
-
-export default Section;
+export const Section = model<ISection>('Section', sectionSchema);

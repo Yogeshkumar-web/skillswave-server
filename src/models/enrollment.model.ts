@@ -52,9 +52,7 @@ const enrollmentSchema = new Schema<IEnrollment>(
 enrollmentSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 // Enrollment Model
-const Enrollment: Model<IEnrollment> = model<IEnrollment>(
+export const Enrollment: Model<IEnrollment> = model<IEnrollment>(
   'Enrollment',
   enrollmentSchema
 );
-
-export default Enrollment;

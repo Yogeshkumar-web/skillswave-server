@@ -1,6 +1,6 @@
 import { Schema, model, Document, Model } from 'mongoose';
-import { ISection, sectionSchema } from './section.model';
-import { IEnrollment, enrollmentSchema } from './enrollment.model';
+import { ISection, Section } from './section.model';
+import { IEnrollment, Enrollment } from './enrollment.model';
 
 // Define the Course document interface
 export interface ICourse extends Document {
@@ -71,13 +71,13 @@ const courseSchema = new Schema<ICourse>(
       enum: ['Draft', 'Published'],
     },
     sections: {
-      type: [sectionSchema], // Embed sections schema
+      type: [Section], // Embed sections schema
       validate: {
         validator: (sections: ISection[]) => sections.length > 0,
         message: 'At least one section is required in a course.',
       },
     },
-    enrollments: [enrollmentSchema], // Embed enrollments schema
+    enrollments: [Enrollment], // Embed enrollments schema
   },
   {
     timestamps: true, // Automatically manage createdAt and updatedAt
@@ -88,6 +88,4 @@ const courseSchema = new Schema<ICourse>(
 courseSchema.index({ category: 1, status: 1 });
 
 // Course model
-const Course: Model<ICourse> = model<ICourse>('Course', courseSchema);
-
-export default Course;
+export const Course: Model<ICourse> = model<ICourse>('Course', courseSchema);

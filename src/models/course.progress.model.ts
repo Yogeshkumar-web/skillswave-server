@@ -102,7 +102,5 @@ const userCourseProgressSchema = new Schema<IUserCourseProgress>(
 userCourseProgressSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 // User Course Progress Model
-const UserCourseProgress: Model<IUserCourseProgress> =
+export const UserCourseProgress: Model<IUserCourseProgress> =
   model<IUserCourseProgress>('UserCourseProgress', userCourseProgressSchema);
-
-export default UserCourseProgress;
