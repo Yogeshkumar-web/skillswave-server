@@ -1,17 +1,9 @@
-import { IChapter } from './chapter.model';
-import { Schema, model, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { chapterSchema } from './chapter.model';
-
-// Interface for Section
-export interface ISection extends Document {
-  sectionId: string;
-  sectionTitle: string;
-  sectionDescription?: string;
-  chapters: IChapter[];
-}
+import { IChapter, ISection } from '../types';
 
 // Section Schema
-const sectionSchema = new Schema<ISection>(
+export const sectionSchema = new Schema<ISection>(
   {
     sectionId: {
       type: String,
@@ -46,4 +38,4 @@ const sectionSchema = new Schema<ISection>(
 );
 
 // Section Model
-export const Section = model<ISection>('Section', sectionSchema);
+export const Section = mongoose.model<ISection>('Section', sectionSchema);

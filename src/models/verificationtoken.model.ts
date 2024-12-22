@@ -1,14 +1,9 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose';
+import { IVerificationToken } from '../types';
 
-interface IVerificationToken extends Document {
-  user: Schema.Types.ObjectId;
-  token: string;
-  expiresAt: Date;
-}
-
-const verificationTokenSchema = new Schema<IVerificationToken>(
+export const verificationTokenSchema = new Schema<IVerificationToken>(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     token: { type: String, required: true, unique: true },
     expiresAt: { type: Date, required: true },
   },
@@ -19,6 +14,6 @@ const verificationTokenSchema = new Schema<IVerificationToken>(
 verificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const VerificationToken = mongoose.model<IVerificationToken>(
-  "VerificationToken",
+  'VerificationToken',
   verificationTokenSchema
 );

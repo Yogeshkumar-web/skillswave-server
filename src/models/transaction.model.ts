@@ -1,16 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
-
-// Interface for Transaction
-export interface ITransaction extends Document {
-  userId: string;
-  transactionId: string;
-  dateTime: Date; // Changed to Date for better handling of timestamps
-  courseId: string;
-  paymentProvider: 'stripe'; // Added Stripe as the only valid payment provider
-  amount?: number; // Optional as some transactions might not involve an amount
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import mongoose, { Schema, Document } from 'mongoose';
+import { ITransaction } from '../types';
 
 // Transaction Schema
 export const transactionSchema = new Schema<ITransaction>(
@@ -51,7 +40,7 @@ export const transactionSchema = new Schema<ITransaction>(
 );
 
 // Transaction Model
-export const Transaction = model<ITransaction>(
+export const Transaction = mongoose.model<ITransaction>(
   'Transaction',
   transactionSchema
 );

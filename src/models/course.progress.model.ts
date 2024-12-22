@@ -1,13 +1,8 @@
-import { Schema, model, Document, Model } from 'mongoose';
-
-// Interface for Chapter Progress
-export interface IChapterProgress {
-  chapterId: string;
-  completed: boolean;
-}
+import mongoose, { Schema, Document } from 'mongoose';
+import { IChapterProgress } from '../types';
 
 // Chapter Progress Schema
-const chapterProgressSchema = new Schema<IChapterProgress>({
+export const chapterProgressSchema = new Schema<IChapterProgress>({
   chapterId: {
     type: String,
     required: true,
@@ -102,5 +97,7 @@ const userCourseProgressSchema = new Schema<IUserCourseProgress>(
 userCourseProgressSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 // User Course Progress Model
-export const UserCourseProgress: Model<IUserCourseProgress> =
-  model<IUserCourseProgress>('UserCourseProgress', userCourseProgressSchema);
+export const UserCourseProgress = mongoose.model<IUserCourseProgress>(
+  'UserCourseProgress',
+  userCourseProgressSchema
+);

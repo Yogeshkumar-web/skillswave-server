@@ -1,27 +1,10 @@
-import { Schema, model, Document, Model } from 'mongoose';
-import { ISection, Section } from './section.model';
-import { IEnrollment, Enrollment } from './enrollment.model';
-
-// Define the Course document interface
-export interface ICourse extends Document {
-  courseId: string;
-  teacherId: string;
-  teacherName: string;
-  title: string;
-  description?: string;
-  category: string;
-  image?: string;
-  price?: number;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  status: 'Draft' | 'Published';
-  sections: ISection[];
-  enrollments: IEnrollment[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from 'mongoose';
+import { ICourse, ISection } from '../types';
+import { sectionSchema } from '../models/section.model';
+import { enrollmentSchema } from './enrollment.model';
 
 // Main Course Schema
-const courseSchema = new Schema<ICourse>(
+export const courseSchema = new Schema<ICourse>(
   {
     courseId: {
       type: String,
@@ -71,13 +54,16 @@ const courseSchema = new Schema<ICourse>(
       enum: ['Draft', 'Published'],
     },
     sections: {
-      type: [Section], // Embed sections schema
+      type: [sectionSchema], // Use section schema
       validate: {
         validator: (sections: ISection[]) => sections.length > 0,
         message: 'At least one section is required in a course.',
       },
     },
-    enrollments: [Enrollment], // Embed enrollments schema
+    enrollments: {
+      type: [enrollmentSchema], // Use enrollment schema
+      default: [], // Default to an empty array
+    },
   },
   {
     timestamps: true, // Automatically manage createdAt and updatedAt
@@ -88,4 +74,4 @@ const courseSchema = new Schema<ICourse>(
 courseSchema.index({ category: 1, status: 1 });
 
 // Course model
-export const Course: Model<ICourse> = model<ICourse>('Course', courseSchema);
+export const Course = mongoose.model<ICourse>('Course', courseSchema);

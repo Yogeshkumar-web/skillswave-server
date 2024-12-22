@@ -1,17 +1,6 @@
-import { Schema, Document, Model, model } from 'mongoose';
-import { commentSchema, IComment } from './comment.model';
-
-// Define the Chapter document interface
-export interface IChapter extends Document {
-  chapterId: string;
-  type: 'Text' | 'Quiz' | 'Video';
-  title: string;
-  content: string;
-  comments: IComment[];
-  video?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from 'mongoose';
+import { commentSchema } from './comment.model';
+import { IChapter } from '../types';
 
 export const chapterSchema = new Schema<IChapter>(
   {
@@ -59,7 +48,4 @@ export const chapterSchema = new Schema<IChapter>(
 );
 
 // Create a model for Chapter
-export const Chapter: Model<IChapter> = model<IChapter>(
-  'Chapter',
-  chapterSchema
-);
+export const Chapter = mongoose.model<IChapter>('Chapter', chapterSchema);

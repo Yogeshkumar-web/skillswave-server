@@ -1,16 +1,8 @@
-import { Schema, model, Document, Model } from 'mongoose';
-
-// Interface for Enrollment
-export interface IEnrollment extends Document {
-  userId: string; // User enrolled in the course
-  courseId: string; // Course the user enrolled in
-  enrollmentDate: Date; // Date when the enrollment occurred
-  status: 'active' | 'completed' | 'cancelled'; // Enrollment status
-  progress: number; // Overall progress percentage (0-100)
-}
+import mongoose, { Schema } from 'mongoose';
+import { IEnrollment } from '../types';
 
 // Enrollment Schema
-const enrollmentSchema = new Schema<IEnrollment>(
+export const enrollmentSchema = new Schema<IEnrollment>(
   {
     userId: {
       type: String,
@@ -52,7 +44,7 @@ const enrollmentSchema = new Schema<IEnrollment>(
 enrollmentSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 // Enrollment Model
-export const Enrollment: Model<IEnrollment> = model<IEnrollment>(
+export const Enrollment = mongoose.model<IEnrollment>(
   'Enrollment',
   enrollmentSchema
 );

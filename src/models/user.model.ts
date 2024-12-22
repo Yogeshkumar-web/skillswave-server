@@ -1,29 +1,10 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import envVariables from '../config';
+import { IUser } from '../types';
 
-// Define the User document interface
-export interface IUser extends Document {
-  userId: string;
-  fullName: string;
-  email: string;
-  password?: string;
-  isVerified: boolean;
-  provider?: string;
-  providerId?: string;
-  image?: string;
-  role: 'admin' | 'user' | 'writer';
-  posts: mongoose.Types.ObjectId[];
-  comments: mongoose.Types.ObjectId[];
-  enrolledCourses: mongoose.Types.ObjectId[];
-  transactions: mongoose.Types.ObjectId[];
-  isPasswordCorrect(password: string): Promise<boolean>;
-  generateAccessToken(): string;
-  generateRefreshToken(): string;
-}
-
-const userSchema = new Schema<IUser>(
+export const userSchema = new Schema<IUser>(
   {
     userId: { type: String, required: true },
     fullName: { type: String, required: true },
@@ -96,4 +77,4 @@ userSchema.methods.generateRefreshToken = function (): string {
 };
 
 // Define the User model with IUser type
-export const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.model<IUser>('User', userSchema);

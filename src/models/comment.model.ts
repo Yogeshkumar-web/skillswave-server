@@ -1,13 +1,5 @@
-import { Schema, Document, Model, model } from 'mongoose';
-
-// Define the Comment document interface
-export interface IComment extends Document {
-  commentId: string;
-  userId: string;
-  text: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from 'mongoose';
+import { IComment } from '../types';
 
 export const commentSchema = new Schema<IComment>(
   {
@@ -34,7 +26,4 @@ export const commentSchema = new Schema<IComment>(
 );
 
 // Create a model for Comment
-export const Comment: Model<IComment> = model<IComment>(
-  'Comment',
-  commentSchema
-);
+export const Comment = mongoose.model<IComment>('Comment', commentSchema);
