@@ -2,14 +2,12 @@
   "name": "template-backend",
   "version": "1.0.0",
   "main": "index.js",
- "scripts": {
-  "start": "node dist/index.js",          
-  "dev": "nodemon src/index.ts",         
-  "build": "npm run clean && tsc",      
-  "clean": "rimraf dist",              
-  "install": "npm install",            
-  "preinstall": "npm run clean",        
-  "postinstall": "npm run build"        
+"scripts": {
+  "preinstall": "rimraf dist",
+  "install": "",
+  "clean": "rimraf dist",
+  "build": "npm ci && tsc",
+  "start": "node dist/index.js"
 },
   "keywords": [],
   "author": "",
