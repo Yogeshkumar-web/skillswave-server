@@ -1,18 +1,18 @@
-import dotenv from "dotenv";
-import Joi from "joi";
+import dotenv from 'dotenv';
+import Joi from 'joi';
 
 // Load environment variables
 const envFound = dotenv.config();
 if (envFound.error) {
-  throw new Error("🚨 No .env file found. Please create one!");
+  throw new Error('🚨 No .env file found. Please create one!');
 }
 
 // Define validation schema
 const envSchema = Joi.object({
   CLIENT_URL: Joi.string().required(),
-  PORT: Joi.number().default(8080),
-  API_PREFIX: Joi.string().default("/api"),
-  MORGAN: Joi.string().default("common"),
+  PORT: Joi.number().required(),
+  API_PREFIX: Joi.string().required(),
+  MORGAN: Joi.string().required(),
   CORS_ORIGIN: Joi.string().required(),
   DATABASE_URL: Joi.string().uri().required(),
   RESEND_API_KEY: Joi.string().required(),
@@ -20,9 +20,9 @@ const envSchema = Joi.object({
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_API_SECRET: Joi.string().required(),
   ACCESS_TOKEN_SECRET: Joi.string().required(),
-  ACCESS_TOKEN_EXPIRY: Joi.string().default("15m"),
+  ACCESS_TOKEN_EXPIRY: Joi.string().default('15m'),
   REFRESH_TOKEN_SECRET: Joi.string().required(),
-  REFRESH_TOKEN_EXPIRY: Joi.string().default("7d"),
+  REFRESH_TOKEN_EXPIRY: Joi.string().default('7d'),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
@@ -35,7 +35,9 @@ const { error, value: validatedEnv } = envSchema.validate(process.env, {
 });
 
 if (error) {
-  throw new Error(`🚨 Environment variable validation failed: ${error.message}`);
+  throw new Error(
+    `🚨 Environment variable validation failed: ${error.message}`
+  );
 }
 
 export default {
@@ -43,8 +45,8 @@ export default {
     port: validatedEnv.PORT,
     apiPrefix: validatedEnv.API_PREFIX,
     morgan: validatedEnv.MORGAN,
-    clientUrl: validatedEnv.CLIENT_URL
-  },    
+    clientUrl: validatedEnv.CLIENT_URL,
+  },
   cors: {
     origin: validatedEnv.CORS_ORIGIN,
   },

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import envVariables from '../config';
@@ -6,7 +6,7 @@ import { IUser } from '../types';
 
 export const userSchema = new Schema<IUser>(
   {
-    userId: { type: String, required: true },
+    userId: { type: String, unique: true },
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
@@ -14,7 +14,11 @@ export const userSchema = new Schema<IUser>(
     provider: { type: String, enum: ['google', 'github', 'local'] },
     providerId: { type: String },
     image: { type: String },
-    role: { type: String, enum: ['admin', 'user', 'writer'], default: 'user' },
+    role: {
+      type: String,
+      enum: ['admin', 'student', 'teacher', 'user', 'writer'],
+      default: 'user',
+    },
     posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     enrolledCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }], // Relationship with Course

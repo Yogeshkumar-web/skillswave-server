@@ -90,7 +90,7 @@ export interface ITransaction extends Document {
 
 // Define the User document interface
 export interface IUser extends Document {
-  userId: string;
+  userId?: string;
   fullName: string;
   email: string;
   password?: string;
@@ -98,7 +98,7 @@ export interface IUser extends Document {
   provider?: string;
   providerId?: string;
   image?: string;
-  role: 'admin' | 'user' | 'writer';
+  role: 'admin' | 'teacher' | 'student' | 'user' | 'writer';
   posts: mongoose.Types.ObjectId[];
   comments: mongoose.Types.ObjectId[];
   enrolledCourses: mongoose.Types.ObjectId[];

@@ -46,6 +46,12 @@ app.use(express.static('public'));
 // Cookie parser
 app.use(cookieParser());
 
+// Logging middleware to debug requests
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.path}`);
+  next();
+});
+
 // Root route
 app.get('/', (req, res) => {
   res.send('Server is running!');
