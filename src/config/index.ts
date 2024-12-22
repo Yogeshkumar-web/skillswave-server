@@ -1,10 +1,12 @@
 import dotenv from 'dotenv';
 import Joi from 'joi';
 
-// Load environment variables
-const envFound = dotenv.config();
-if (envFound.error) {
-  throw new Error('🚨 No .env file found. Please create one!');
+if (process.env.NODE_ENV !== 'production') {
+  // Only load .env in non-production environments (i.e., locally)
+  const envFound = dotenv.config();
+  if (envFound.error) {
+    throw new Error('🚨 No .env file found. Please create one!');
+  }
 }
 
 // Define validation schema
