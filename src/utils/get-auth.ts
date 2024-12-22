@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IUser } from '../models/user.model';
+import { IUser } from '../types';
 
 // Define the structure of the extended Request object with an optional user
 export interface AuthenticatedRequest extends Request {
