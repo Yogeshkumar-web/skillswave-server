@@ -1,38 +1,56 @@
-import { Response } from "express";
+import { Response } from 'express';
 
-interface ApiResponse<T> {
-  success: boolean;
+interface SuccessResponse<T> {
+  success: true;
   message: string;
   data: T;
   metadata?: Record<string, unknown>;
   timestamp: string;
 }
 
-type ApiResponseFunction = <T>(
-  res: Response,
-  success: boolean,
-  message: string,
-  data?: T,
-  statusCode?: number,
-  metadata?: Record<string, unknown>
-) => Response;
+interface ErrorResponse {
+  success: false;
+  message: string;
+  error: string;
+  timestamp: string;
+}
 
-// Standardized API response function
-const apiResponse: ApiResponseFunction = <T>(
+type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+
+const apiResponse = <T>(
   res: Response,
-  success: boolean,
-  message: string,
-  data: T = {} as T, // Default empty object cast to generic type T
-  statusCode: number = 200,
-  metadata: Record<string, unknown> = {}
+  options: {
+    success: boolean;
+    message: string;
+    data?: T;
+    statusCode?: number;
+    metadata?: Record<string, unknown>;
+    error?: string;
+  }
 ): Response => {
-  const response: ApiResponse<T> = {
+  const {
     success,
     message,
     data,
-    metadata,
-    timestamp: new Date().toISOString(),
-  };
+    statusCode = 200,
+    metadata = {},
+    error,
+  } = options;
+
+  const response: ApiResponse<T> = success
+    ? {
+        success: true,
+        message,
+        data: data as T,
+        metadata,
+        timestamp: new Date().toISOString(),
+      }
+    : {
+        success: false,
+        message,
+        error: error || 'An unexpected error occurred',
+        timestamp: new Date().toISOString(),
+      };
 
   return res.status(statusCode).json(response);
 };
