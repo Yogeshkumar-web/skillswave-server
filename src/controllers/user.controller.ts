@@ -9,30 +9,38 @@ import { sendEmail } from '../utils/send-email';
 import { RefreshToken } from '../models/refreshtoken.model';
 import { DecodedToken } from '../types';
 import jwt from 'jsonwebtoken';
+import { HttpStatusCodes } from '../config/status-codes';
 
 const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const { fullName, email, password, confirmPassword } = req.body;
 
   // Validate required fields
   if (!fullName || !email || !password) {
-    return apiResponse(res, false, 'All fields are required', null, 400);
+    return apiResponse(res, {
+      success: false,
+      message: 'All fields are required',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
 
   // match password
   if (password !== confirmPassword) {
-    return apiResponse(res, false, 'Enter the same password!', null, 400);
+    // return apiResponse(res, false, 'Enter the same password!', null, 400);
+    return apiResponse(res, {
+      success: false,
+      message: 'Enter the same password',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
 
   // Check for existing user
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return apiResponse(
-      res,
-      false,
-      'User with this email already exists',
-      null,
-      409
-    );
+    return apiResponse(res, {
+      success: false,
+      message: 'User with this email already exist',
+      statusCode: HttpStatusCodes.CONFLICT,
+    });
   }
 
   // Create unverified user
@@ -62,23 +70,19 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
     // Roll back user creation if email fails to send
     await user.deleteOne();
     await VerificationToken.deleteOne({ user: user._id });
-    return apiResponse(
-      res,
-      false,
-      'Failed to sent verification email',
-      null,
-      500
-    );
+    return apiResponse(res, {
+      success: false,
+      message: 'Failed to sent verification email',
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+    });
   }
 
   // Send success response
-  return apiResponse(
-    res,
-    true,
-    'Verification email sent successfully',
-    null,
-    200
-  );
+  return apiResponse(res, {
+    success: true,
+    message: 'Verification email sent successfully',
+    statusCode: HttpStatusCodes.OK,
+  });
 });
 
 const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
@@ -86,19 +90,21 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
   // Check for the presence of token
   if (!token) {
-    return apiResponse(res, false, 'Verification token is required', null, 400);
+    return apiResponse(res, {
+      success: false,
+      message: 'Verification token is required',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
 
   // Find token in the database
   const verificationToken = await VerificationToken.findOne({ token });
   if (!verificationToken || verificationToken.expiresAt < new Date()) {
-    return apiResponse(
-      res,
-      false,
-      'Token is invalid or has expired',
-      null,
-      400
-    );
+    return apiResponse(res, {
+      success: false,
+      message: 'Token is invalid or has expired',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
 
   // Activate user
@@ -109,13 +115,21 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   );
 
   if (!user) {
-    return apiResponse(res, false, 'User not found', null, 404);
+    return apiResponse(res, {
+      success: false,
+      message: 'User not found',
+      statusCode: HttpStatusCodes.NOT_FOUND,
+    });
   }
 
   // Delete the token
   await VerificationToken.deleteOne({ token });
 
-  return apiResponse(res, true, 'Email verified successfully', null, 200);
+  return apiResponse(res, {
+    success: true,
+    message: 'Email verified successfully',
+    statusCode: HttpStatusCodes.OK,
+  });
 });
 
 const loginUser = asyncHandler(async (req: Request, res: Response) => {
@@ -123,37 +137,41 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if email and password are provided
   if (!email || !password) {
-    return apiResponse(
-      res,
-      false,
-      'Please provide email and password',
-      null,
-      400
-    );
+    return apiResponse(res, {
+      success: false,
+      message: 'Please provide email and password',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
 
   // Check if the user exists
   const user = await User.findOne({ email });
   if (!user) {
-    // throw new ApiError(401, "Invalid credentials");
-    return apiResponse(res, false, 'Invalid credentials', null, 401);
+    return apiResponse(res, {
+      success: false,
+      message: 'Invalid credentials',
+      statusCode: HttpStatusCodes.UNAUTHORIZED,
+    });
   }
 
   // Check if email is verified
   if (!user.isVerified) {
-    return apiResponse(
-      res,
-      false,
-      'Please verify your email before logging in',
-      null,
-      403
-    );
+    return apiResponse(res, {
+      success: true,
+      message: 'Please verify your email before logging in',
+      statusCode: HttpStatusCodes.FORBIDDEN,
+    });
   }
 
   // Verify the password
   const isPasswordCorrect = await user.isPasswordCorrect(password);
   if (!isPasswordCorrect) {
-    return apiResponse(res, false, 'Incorrect password', null, 401);
+    // return apiResponse(res, false, 'Incorrect password', null, 401);
+    return apiResponse(res, {
+      success: false,
+      message: 'Incorrect password',
+      statusCode: HttpStatusCodes.UNAUTHORIZED,
+    });
   }
 
   // Delete the existing refresh token for this user
@@ -186,10 +204,12 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
     res
       .cookie('accessToken', accessToken, options)
       .cookie('refreshToken', refreshToken, options),
-    true,
-    'Login successfull',
-    user,
-    200
+
+    {
+      success: true,
+      message: 'Login successfull',
+      statusCode: HttpStatusCodes.OK,
+    }
   );
 });
 
@@ -197,13 +217,11 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
   // Check if the refresh token exists
   if (!refreshToken) {
-    return apiResponse(
-      res,
-      false,
-      'No refresh token provided for logout',
-      null,
-      400
-    );
+    return apiResponse(res, {
+      success: false,
+      message: 'No refresh token provided for logout',
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+    });
   }
   // Find and delete the refresh token from the database
   await RefreshToken.findOneAndDelete({ token: refreshToken });
@@ -219,7 +237,11 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   res.clearCookie('refreshToken', options);
 
   // Send response indicating successful logout
-  return apiResponse(res, true, 'Logout successful', null, 200);
+  return apiResponse(res, {
+    success: true,
+    message: 'Login successfull',
+    statusCode: HttpStatusCodes.OK,
+  });
 });
 
 const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -227,7 +249,11 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
 
   // If no token is present, respond with a 401 (Unauthorized)
   if (!accessToken) {
-    return apiResponse(res, false, 'Not authenticated', null, 401);
+    return apiResponse(res, {
+      success: false,
+      message: 'Not authentication',
+      statusCode: HttpStatusCodes.UNAUTHORIZED,
+    });
   }
 
   try {
@@ -241,19 +267,26 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findById(decodedToken._id).select('-password');
 
     if (!user) {
-      return apiResponse(res, false, 'User not found', null, 404);
+      return apiResponse(res, {
+        success: false,
+        message: 'User not found',
+        statusCode: HttpStatusCodes.NOT_FOUND,
+      });
     }
 
     // Send the user profile in the response
-    return apiResponse(
-      res,
-      true,
-      'User profile retrieved successfully',
-      user,
-      200
-    );
+    return apiResponse(res, {
+      success: true,
+      message: 'User profile retrieved successfully',
+      data: user,
+      statusCode: HttpStatusCodes.OK,
+    });
   } catch (error) {
-    return apiResponse(res, false, 'Invalid token', null, 401);
+    return apiResponse(res, {
+      success: false,
+      message: 'Invalid token',
+      statusCode: HttpStatusCodes.UNAUTHORIZED,
+    });
   }
 });
 

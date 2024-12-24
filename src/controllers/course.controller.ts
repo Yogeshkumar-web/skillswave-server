@@ -7,6 +7,7 @@ import { uploadOnCloudinary } from '../utils/cloudinary';
 import { AuthenticatedRequest, getAuth } from '../utils/get-auth';
 import mongoose from 'mongoose';
 import fs from 'fs';
+import { ErrorCodes, HttpStatusCodes } from '../config/status-codes';
 
 // // Function to list courses with optional category filter, pagination, and sorting
 export const getCourses = asyncHandler(
@@ -48,23 +49,26 @@ export const getCourses = asyncHandler(
       const totalPages = Math.ceil(totalCourses / pageSize);
 
       // Return API response with pagination metadata
-      return apiResponse(
-        res,
-        true,
-        'Courses retrieved successfully',
-        {
+      return apiResponse(res, {
+        success: true,
+        message: 'Courses retrieved successfully',
+        data: {
           courses,
           totalCourses,
           totalPages,
           currentPage: pageNumber,
           pageSize,
         },
-        200
-      );
+        statusCode: HttpStatusCodes.OK,
+      });
     } catch (error) {
       // Handle unexpected errors gracefully
       console.error('Error retrieving courses:', error);
-      return apiResponse(res, false, 'Failed to retrieve courses', null, 500);
+      return apiResponse(res, {
+        success: false,
+        message: 'Failed to retrieve courses',
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 );
@@ -75,7 +79,11 @@ export const getCourse = asyncHandler(
 
     // Validate the courseId format (ensure it's a valid ObjectId if you're using MongoDB)
     if (!courseId.match(/^[0-9a-fA-F]{24}$/)) {
-      return apiResponse(res, false, 'Invalid course ID format', null, 400);
+      return apiResponse(res, {
+        success: false,
+        message: 'Invalid course ID format',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+      });
     }
 
     try {
@@ -86,29 +94,30 @@ export const getCourse = asyncHandler(
 
       // Check if the course was found
       if (!course) {
-        return apiResponse(res, false, 'Course not found', null, 404);
+        return apiResponse(res, {
+          success: false,
+          message: 'Course not found',
+          statusCode: HttpStatusCodes.NOT_FOUND,
+        });
       }
 
       // Return the course data in the API response
-      return apiResponse(
-        res,
-        true,
-        'Course retrieved successfully',
-        course,
-        200
-      );
+      return apiResponse(res, {
+        success: true,
+        message: 'Course retrieved successfully',
+        data: course,
+        statusCode: HttpStatusCodes.OK,
+      });
     } catch (error) {
       // Log the error for debugging
       console.error('Error fetching course:', error);
 
       // Send a generic error response
-      return apiResponse(
-        res,
-        false,
-        'An error occurred while fetching the course',
-        null,
-        500
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'An error occured while fetching the course',
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 );
@@ -129,18 +138,21 @@ export const createCourse = asyncHandler(
 
     // Validate required fields
     if (!teacherId || !teacherName || !title || !category) {
-      return apiResponse(
-        res,
-        false,
-        'Teacher Id, Teacher Name, Title, and Category are required',
-        null,
-        400
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'Teacher ID, Teacher name, Title, and Category are required',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+      });
     }
 
     // Validate that the teacherId is a valid ObjectId if it's from MongoDB
     if (!mongoose.Types.ObjectId.isValid(teacherId)) {
-      return apiResponse(res, false, 'Invalid Teacher ID', null, 400);
+      return apiResponse(res, {
+        success: false,
+        message: 'Invalid Teacher id',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        error: ErrorCodes.BAD_REQUEST,
+      });
     }
 
     // Handle image upload if provided
@@ -150,13 +162,11 @@ export const createCourse = asyncHandler(
         const uploadResult = await uploadOnCloudinary(image);
         imageUrl = uploadResult?.secure_url!; // Assuming the result contains a secure_url field
       } catch (error) {
-        return apiResponse(
-          res,
-          false,
-          'Error uploading image to Cloudinary',
-          null,
-          500
-        );
+        return apiResponse(res, {
+          success: false,
+          message: 'Error uploading image to cloudinary',
+          statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        });
       }
     }
 
@@ -181,17 +191,20 @@ export const createCourse = asyncHandler(
       await newCourse.save();
 
       // Respond with success message and the newly created course
-      return apiResponse(
-        res,
-        true,
-        'Course created successfully',
-        newCourse,
-        201
-      );
+      return apiResponse(res, {
+        success: true,
+        message: 'Course created successfully',
+        data: newCourse,
+        statusCode: HttpStatusCodes.CREATED,
+      });
     } catch (error) {
       // Log the error and respond with an error message
       console.error('Error creating course:', error);
-      return apiResponse(res, false, 'Error creating course', null, 500);
+      return apiResponse(res, {
+        success: false,
+        message: 'Error creating course',
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 );
@@ -205,31 +218,31 @@ export const updateCourse = asyncHandler(
     // Find the course by courseId
     const course = await Course.findOne({ courseId });
     if (!course) {
-      return apiResponse(res, false, 'Course not found', null, 404);
+      return apiResponse(res, {
+        success: false,
+        message: 'Course not found',
+        statusCode: HttpStatusCodes.NOT_FOUND,
+      });
     }
 
     // Check authorization: Ensure the logged-in user is the course owner (teacher)
     if (course.teacherId !== userId) {
-      return apiResponse(
-        res,
-        false,
-        'Not authorized to update this course',
-        null,
-        403
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'Not authorized to update this course',
+        statusCode: HttpStatusCodes.FORBIDDEN,
+      });
     }
 
     // Validate and process price
     if (updateData.price) {
       const price = parseInt(updateData.price, 10);
       if (isNaN(price)) {
-        return apiResponse(
-          res,
-          false,
-          'Invalid price format. Price must be a valid number.',
-          null,
-          400
-        );
+        return apiResponse(res, {
+          success: false,
+          message: 'Invalid price format. Price must be a valid number',
+          statusCode: HttpStatusCodes.BAD_REQUEST,
+        });
       }
       updateData.price = price * 100; // Convert price to cents (or paise)
     }
@@ -240,13 +253,11 @@ export const updateCourse = asyncHandler(
         const uploadResult = await uploadOnCloudinary(updateData.image);
         updateData.image = uploadResult?.secure_url; // Get the secure URL of the uploaded image
       } catch (error) {
-        return apiResponse(
-          res,
-          false,
-          'Error uploading image to Cloudinary',
-          null,
-          500
-        );
+        return apiResponse(res, {
+          success: false,
+          message: 'Error uploading image to cloudinary',
+          statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        });
       }
     }
 
@@ -277,7 +288,12 @@ export const updateCourse = asyncHandler(
     await course.save();
 
     // Send a response with the updated course
-    return apiResponse(res, true, 'Course updated successfully', course, 200);
+    return apiResponse(res, {
+      success: true,
+      message: 'Course updated successfully',
+      data: course,
+      statusCode: HttpStatusCodes.OK,
+    });
   }
 );
 
@@ -289,25 +305,32 @@ export const deleteCourse = asyncHandler(
     // Find the course by its courseId
     const course = await Course.findOne({ courseId });
     if (!course) {
-      return apiResponse(res, false, 'Course not found', null, 404);
+      return apiResponse(res, {
+        success: false,
+        message: 'Course not found',
+        statusCode: HttpStatusCodes.NOT_FOUND,
+      });
     }
 
     // Check if the logged-in user is the teacher for this course
     if (course.teacherId !== userId) {
-      return apiResponse(
-        res,
-        false,
-        'Not authorized to delete this course',
-        null,
-        403
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'Not authorized to delete this course',
+        statusCode: HttpStatusCodes.FORBIDDEN,
+      });
     }
 
     // Delete the course from the database
     await Course.findOneAndDelete({ courseId });
 
     // Respond with success message
-    return apiResponse(res, true, 'Course deleted successfully', course);
+    return apiResponse(res, {
+      success: true,
+      message: 'Course deleted successfully',
+      statusCode: HttpStatusCodes.OK,
+    });
+    // return apiResponse(res, true, 'Course deleted successfully', course);
   }
 );
 
@@ -317,37 +340,41 @@ export const uploadVideo = asyncHandler(
 
     // Check if a file is provided
     if (!file) {
-      return apiResponse(res, false, 'No video file provided', null, 400);
+      return apiResponse(res, {
+        success: false,
+        message: 'No video file provided',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+      });
     }
 
     // Validate that the file is a video
     const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/mkv']; // List supported video formats
     if (!allowedTypes.includes(file.mimetype)) {
-      return apiResponse(
-        res,
-        false,
-        'Invalid video format. Allowed formats are MP4, AVI, MOV, MKV.',
-        null,
-        400
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'Invalid video format. Allowed formats are MP4, AVI, MOV, MKV',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+      });
     }
 
     // Validate file size (max 500MB, for example)
     const maxSize = 500 * 1024 * 1024; // 500 MB
     if (file.size > maxSize) {
-      return apiResponse(
-        res,
-        false,
-        'Video file is too large. Maximum size is 500MB.',
-        null,
-        400
-      );
+      return apiResponse(res, {
+        success: false,
+        message: 'Video file is too large. Maximum size is 500MB',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+      });
     }
 
     try {
       // Check if the file path exists before uploading
       if (!fs.existsSync(file.path)) {
-        return apiResponse(res, false, 'File path does not exist', null, 400);
+        return apiResponse(res, {
+          success: false,
+          message: 'File path does not exists',
+          statusCode: HttpStatusCodes.BAD_REQUEST,
+        });
       }
 
       // Upload the video to Cloudinary
@@ -355,28 +382,32 @@ export const uploadVideo = asyncHandler(
 
       // If the upload fails
       if (!response) {
-        return apiResponse(
-          res,
-          false,
-          'Error uploading video to Cloudinary',
-          null,
-          500
-        );
+        return apiResponse(res, {
+          success: false,
+          message: 'Error uploading video to cloudinary',
+          statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        });
       }
 
       // Return the response data
-      return apiResponse(res, true, 'Video uploaded successfully', {
-        publicId: response.public_id,
-        secureUrl: response.secure_url,
-        format: response.format,
-        duration: response.duration,
-        resourceType: response.resource_type,
+      return apiResponse(res, {
+        success: true,
+        message: 'Video uploaded successfully',
+        data: {
+          publicId: response.public_id,
+          secureUrl: response.secure_url,
+          format: response.format,
+          duration: response.duration,
+          resourceType: response.resource_type,
+        },
+        statusCode: HttpStatusCodes.OK,
       });
     } catch (error) {
-      // Detailed error logging
-      console.error('Error in uploadVideo controller:', error);
-
-      return apiResponse(res, false, 'Error uploading video', error, 500);
+      return apiResponse(res, {
+        success: false,
+        message: 'Error uploading video',
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 );
