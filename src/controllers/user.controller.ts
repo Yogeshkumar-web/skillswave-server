@@ -195,15 +195,22 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
     expiresAt: expiresAt,
   });
 
-  // Now you can remove the password field from the user object before sending the response
-  user.password = undefined;
-
   //options
   const options: CookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
     sameSite: 'none', // Adjust based on your frontend-backend setup
     path: '/', // Cookies will be available site-wide
+  };
+
+  // remove the password and other unnecessary fields
+
+  const filteredUser = {
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    image: user.image,
   };
 
   // Send tokens in response (securely in cookies)
@@ -216,7 +223,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
       success: true,
       message: 'Login successfull',
       statusCode: HttpStatusCodes.OK,
-      data: user,
+      data: { user: filteredUser },
     }
   );
 });
