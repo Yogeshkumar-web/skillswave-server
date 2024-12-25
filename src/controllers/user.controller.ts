@@ -234,9 +234,11 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   await RefreshToken.findOneAndDelete({ token: refreshToken });
 
   //options
-  const options = {
+  const options: CookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+    sameSite: 'none', // Adjust based on your frontend-backend setup
+    path: '/', // Cookies will be available site-wide
   };
 
   // Clear cookies
