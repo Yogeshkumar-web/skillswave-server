@@ -216,6 +216,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
       success: true,
       message: 'Login successfull',
       statusCode: HttpStatusCodes.OK,
+      data: user,
     }
   );
 });
@@ -248,7 +249,7 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   // Send response indicating successful logout
   return apiResponse(res, {
     success: true,
-    message: 'Login successfull',
+    message: 'Logout successfull',
     statusCode: HttpStatusCodes.OK,
   });
 });
