@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/async-handler';
 import apiResponse from '../utils/api-response';
 import { User } from '../models/user.model';
-import { Request, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { VerificationToken } from '../models/verificationtoken.model';
 import crypto from 'crypto';
 import envVariables from '../config';
@@ -9,7 +9,7 @@ import { sendEmail } from '../utils/send-email';
 import { RefreshToken } from '../models/refreshtoken.model';
 import { DecodedToken } from '../types';
 import jwt from 'jsonwebtoken';
-import { HttpStatusCodes } from '../config/status-codes';
+import { ErrorCodes, HttpStatusCodes } from '../config/status-codes';
 
 const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const { fullName, email, password, confirmPassword } = req.body;
@@ -20,6 +20,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
       success: false,
       message: 'All fields are required',
       statusCode: HttpStatusCodes.BAD_REQUEST,
+      error: ErrorCodes.DATA_TOO_SHORT,
     });
   }
 
@@ -30,6 +31,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
       success: false,
       message: 'Enter the same password',
       statusCode: HttpStatusCodes.BAD_REQUEST,
+      error: ErrorCodes.PASSWORD_MISMATCH,
     });
   }
 
@@ -94,6 +96,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
       success: false,
       message: 'Verification token is required',
       statusCode: HttpStatusCodes.BAD_REQUEST,
+      error: ErrorCodes.MISSING_FIELDS,
     });
   }
 
@@ -104,6 +107,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
       success: false,
       message: 'Token is invalid or has expired',
       statusCode: HttpStatusCodes.BAD_REQUEST,
+      error: ErrorCodes.INVALID_TOKEN,
     });
   }
 
@@ -119,6 +123,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
       success: false,
       message: 'User not found',
       statusCode: HttpStatusCodes.NOT_FOUND,
+      error: ErrorCodes.NOT_FOUND,
     });
   }
 
@@ -194,9 +199,11 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   user.password = undefined;
 
   //options
-  const options = {
+  const options: CookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+    sameSite: 'strict', // Adjust based on your frontend-backend setup
+    path: '/', // Cookies will be available site-wide
   };
 
   // Send tokens in response (securely in cookies)
