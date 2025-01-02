@@ -1,9 +1,9 @@
 import { Request } from 'express';
-import { IUser } from '../types';
+import { User } from '../types';
 
 // Define the structure of the extended Request object with an optional user
 export interface AuthenticatedRequest extends Request {
-  user?: IUser; // User information can be undefined if not authenticated
+  user?: User; // User information can be undefined if not authenticated
 }
 
 // Function to extract user information from the request
