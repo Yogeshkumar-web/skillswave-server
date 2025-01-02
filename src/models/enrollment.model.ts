@@ -1,8 +1,8 @@
-import mongoose, { Schema } from 'mongoose';
-import { IEnrollment } from '../types';
+import { model, Schema } from 'mongoose';
+import { Enrollment } from '../types';
 
 // Enrollment Schema
-export const enrollmentSchema = new Schema<IEnrollment>(
+export const enrollmentSchema = new Schema<Enrollment>(
   {
     userId: {
       type: String,
@@ -43,8 +43,7 @@ export const enrollmentSchema = new Schema<IEnrollment>(
 // Add compound index for efficient querying by user and course
 enrollmentSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
-// Enrollment Model
-export const Enrollment = mongoose.model<IEnrollment>(
+export const EnrollmentModel = model<Enrollment>(
   'Enrollment',
   enrollmentSchema
 );

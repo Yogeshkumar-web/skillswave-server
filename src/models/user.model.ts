@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import envVariables from '../config';
-import { IUser } from '../types';
+import { User } from '../types';
 
-export const userSchema = new Schema<IUser>(
+export const userSchema = new Schema<User>(
   {
     userId: { type: String, unique: true },
     fullName: { type: String, required: true },
@@ -80,5 +80,4 @@ userSchema.methods.generateRefreshToken = function (): string {
   }
 };
 
-// Define the User model with IUser type
-export const User = mongoose.model<IUser>('User', userSchema);
+export const UserModel = model<User>('User', userSchema);

@@ -1,7 +1,7 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { IVerificationToken } from '../types';
+import { model, Schema } from 'mongoose';
+import { VerificationToken } from '../types';
 
-export const verificationTokenSchema = new Schema<IVerificationToken>(
+export const verificationTokenSchema = new Schema<VerificationToken>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     token: { type: String, required: true, unique: true },
@@ -13,7 +13,7 @@ export const verificationTokenSchema = new Schema<IVerificationToken>(
 // Set TTL for auto-removal of expired verification tokens
 verificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const VerificationToken = mongoose.model<IVerificationToken>(
+export const VerificationTokenModel = model<VerificationToken>(
   'VerificationToken',
   verificationTokenSchema
 );

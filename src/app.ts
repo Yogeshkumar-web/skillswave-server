@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import envVariables from './config';
 import userRouter from './routes/user.route';
 import courseRouter from './routes/course.route';
+import { errorHandler } from './middlewares/error-handler';
 
 const app = express();
 
@@ -60,5 +61,7 @@ app.get('/', (req, res) => {
 // API routes
 app.use(`${envVariables.app.apiPrefix}`, userRouter);
 app.use(`${envVariables.app.apiPrefix}`, courseRouter);
+
+app.use(errorHandler);
 
 export { app };

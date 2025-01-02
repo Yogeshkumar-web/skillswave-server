@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Course } from '../models/course.model';
+import { CourseModel } from '../models/course.model';
 import { v4 as uuidv4 } from 'uuid';
 import { asyncHandler } from '../utils/async-handler';
 import apiResponse from '../utils/api-response';
@@ -37,13 +37,13 @@ export const getCourses = asyncHandler(
 
     try {
       // Fetch courses from the database with pagination, category filter, and sorting
-      const courses = await Course.find(categoryFilter)
+      const courses = await CourseModel.find(categoryFilter)
         .skip(skip)
         .limit(pageSize);
       // .sort(sortCriteria);
 
       // Get total number of courses for pagination metadata
-      const totalCourses = await Course.countDocuments(categoryFilter);
+      const totalCourses = await CourseModel.countDocuments(categoryFilter);
 
       // Calculate total pages for pagination
       const totalPages = Math.ceil(totalCourses / pageSize);
@@ -88,7 +88,7 @@ export const getCourse = asyncHandler(
 
     try {
       // Fetch the course from the database with necessary population (if needed)
-      const course = await Course.findById(courseId)
+      const course = await CourseModel.findById(courseId)
         .populate('sections')
         .populate('teacherId');
 
@@ -171,7 +171,7 @@ export const createCourse = asyncHandler(
     }
 
     // Create a new course instance
-    const newCourse = new Course({
+    const newCourse = new CourseModel({
       courseId: uuidv4(), // Generate a unique course ID
       teacherId,
       teacherName,
@@ -216,7 +216,7 @@ export const updateCourse = asyncHandler(
     const { userId } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
 
     // Find the course by courseId
-    const course = await Course.findOne({ courseId });
+    const course = await CourseModel.findOne({ courseId });
     if (!course) {
       return apiResponse(res, {
         success: false,
@@ -303,7 +303,7 @@ export const deleteCourse = asyncHandler(
     const { userId } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
 
     // Find the course by its courseId
-    const course = await Course.findOne({ courseId });
+    const course = await CourseModel.findOne({ courseId });
     if (!course) {
       return apiResponse(res, {
         success: false,
@@ -322,7 +322,7 @@ export const deleteCourse = asyncHandler(
     }
 
     // Delete the course from the database
-    await Course.findOneAndDelete({ courseId });
+    await CourseModel.findOneAndDelete({ courseId });
 
     // Respond with success message
     return apiResponse(res, {

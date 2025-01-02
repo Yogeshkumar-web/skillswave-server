@@ -1,8 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { IChapterProgress } from '../types';
+import { model, Schema } from 'mongoose';
+import { ChapterProgress, SectionProgress, UserCourseProgress } from '../types';
 
 // Chapter Progress Schema
-export const chapterProgressSchema = new Schema<IChapterProgress>({
+export const chapterProgressSchema = new Schema<ChapterProgress>({
   chapterId: {
     type: String,
     required: true,
@@ -14,14 +14,8 @@ export const chapterProgressSchema = new Schema<IChapterProgress>({
   },
 });
 
-// Interface for Section Progress
-export interface ISectionProgress {
-  sectionId: string;
-  chapters: IChapterProgress[];
-}
-
 // Section Progress Schema
-const sectionProgressSchema = new Schema<ISectionProgress>({
+export const sectionProgressSchema = new Schema<SectionProgress>({
   sectionId: {
     type: String,
     required: true,
@@ -31,26 +25,14 @@ const sectionProgressSchema = new Schema<ISectionProgress>({
     type: [chapterProgressSchema],
     required: true,
     validate: {
-      validator: (chapters: IChapterProgress[]) => chapters.length > 0,
+      validator: (chapters: ChapterProgress[]) => chapters.length > 0,
       message: 'Each section must have at least one chapter.',
     },
   },
 });
 
-// Interface for User Course Progress
-export interface IUserCourseProgress extends Document {
-  userId: string;
-  courseId: string;
-  enrollmentDate: Date;
-  overallProgress: number; // Percentage (0-100)
-  sections: ISectionProgress[];
-  lastAccessedTimestamp: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
 // User Course Progress Schema
-const userCourseProgressSchema = new Schema<IUserCourseProgress>(
+const userCourseProgressSchema = new Schema<UserCourseProgress>(
   {
     userId: {
       type: String,
@@ -79,7 +61,7 @@ const userCourseProgressSchema = new Schema<IUserCourseProgress>(
       type: [sectionProgressSchema],
       required: true,
       validate: {
-        validator: (sections: ISectionProgress[]) => sections.length > 0,
+        validator: (sections: SectionProgress[]) => sections.length > 0,
         message: 'At least one section progress is required.',
       },
     },
@@ -96,8 +78,15 @@ const userCourseProgressSchema = new Schema<IUserCourseProgress>(
 // Add compound index for efficient queries by user and course
 userCourseProgressSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
-// User Course Progress Model
-export const UserCourseProgress = mongoose.model<IUserCourseProgress>(
+export const ChapterProgressModel = model<ChapterProgress>(
+  'ChapterProgress',
+  chapterProgressSchema
+);
+export const SectionProgressModel = model<SectionProgress>(
+  'SectionProgress',
+  sectionProgressSchema
+);
+export const UserCourseProgressModel = model<UserCourseProgress>(
   'UserCourseProgress',
   userCourseProgressSchema
 );

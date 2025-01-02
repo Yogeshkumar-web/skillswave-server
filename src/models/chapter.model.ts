@@ -1,8 +1,8 @@
-import mongoose, { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import { commentSchema } from './comment.model';
-import { IChapter } from '../types';
+import { Chapter } from '../types';
 
-export const chapterSchema = new Schema<IChapter>(
+export const chapterSchema = new Schema<Chapter>(
   {
     chapterId: {
       type: String,
@@ -47,5 +47,4 @@ export const chapterSchema = new Schema<IChapter>(
   }
 );
 
-// Create a model for Chapter
-export const Chapter = mongoose.model<IChapter>('Chapter', chapterSchema);
+export const ChapterModel = model<Chapter>('Chapter', chapterSchema);

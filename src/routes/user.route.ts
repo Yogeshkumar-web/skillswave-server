@@ -3,6 +3,7 @@ import {
   getUserProfile,
   loginUser,
   logoutUser,
+  refreshAccessToken,
   registerUser,
   verifyEmail,
 } from '../controllers/user.controller';
@@ -18,6 +19,7 @@ privateRoutes.use(authenticateJwt);
 router.route('/register').post(registerUser);
 router.route('/verify-email').post(verifyEmail);
 router.route('/login').post(loginUser);
+router.route('/refresh-token').post(refreshAccessToken);
 
 // Private Routes
 privateRoutes.route('/logout').post(logoutUser);

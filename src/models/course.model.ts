@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose';
-import { ICourse, ISection } from '../types';
+import { model, Schema } from 'mongoose';
+import { Course, Section } from '../types';
 import { sectionSchema } from '../models/section.model';
 import { enrollmentSchema } from './enrollment.model';
 
 // Main Course Schema
-export const courseSchema = new Schema<ICourse>(
+export const courseSchema = new Schema<Course>(
   {
     courseId: {
       type: String,
@@ -56,7 +56,7 @@ export const courseSchema = new Schema<ICourse>(
     sections: {
       type: [sectionSchema], // Use section schema
       validate: {
-        validator: (sections: ISection[]) => sections.length > 0,
+        validator: (sections: Section[]) => sections.length > 0,
         message: 'At least one section is required in a course.',
       },
     },
@@ -73,5 +73,4 @@ export const courseSchema = new Schema<ICourse>(
 // Add index for faster searches on category and status
 courseSchema.index({ category: 1, status: 1 });
 
-// Course model
-export const Course = mongoose.model<ICourse>('Course', courseSchema);
+export const CourseModel = model<Course>('Course', courseSchema);

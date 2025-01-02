@@ -1,19 +1,9 @@
-import {
-  Strategy as JwtStrategy,
-
-  StrategyOptions,
-} from 'passport-jwt';
+import { Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import passport from 'passport';
 import { User } from '../models/user.model';
 import envVariables from '../config';
-import { Request } from 'express'
-
-// Interface to extend JWT payload structure
-interface JwtPayload {
-  _id: string;
-  email: string;
-  role?: string;
-}
+import { Request } from 'express';
+import { JwtPayload } from '../types';
 
 const cookieExtractor = (req: Request) => {
   return req?.cookies?.accessToken || null;
