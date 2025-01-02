@@ -1,8 +1,8 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { ITransaction } from '../types';
+import { model, Schema } from 'mongoose';
+import { Transaction } from '../types';
 
 // Transaction Schema
-export const transactionSchema = new Schema<ITransaction>(
+export const transactionSchema = new Schema<Transaction>(
   {
     userId: {
       type: String,
@@ -39,8 +39,7 @@ export const transactionSchema = new Schema<ITransaction>(
   }
 );
 
-// Transaction Model
-export const Transaction = mongoose.model<ITransaction>(
+export const TransactionModel = model<Transaction>(
   'Transaction',
   transactionSchema
 );

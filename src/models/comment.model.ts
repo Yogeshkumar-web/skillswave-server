@@ -1,7 +1,7 @@
-import mongoose, { Schema } from 'mongoose';
-import { IComment } from '../types';
+import { model, Schema } from 'mongoose';
+import { Comment } from '../types';
 
-export const commentSchema = new Schema<IComment>(
+export const commentSchema = new Schema<Comment>(
   {
     commentId: {
       type: String,
@@ -25,5 +25,4 @@ export const commentSchema = new Schema<IComment>(
   }
 );
 
-// Create a model for Comment
-export const Comment = mongoose.model<IComment>('Comment', commentSchema);
+export const CommentModel = model<Comment>('Comment', commentSchema);

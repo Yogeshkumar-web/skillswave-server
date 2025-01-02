@@ -1,9 +1,9 @@
-import mongoose, { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import { chapterSchema } from './chapter.model';
-import { IChapter, ISection } from '../types';
+import { Section, Chapter } from '../types';
 
 // Section Schema
-export const sectionSchema = new Schema<ISection>(
+export const sectionSchema = new Schema<Section>(
   {
     sectionId: {
       type: String,
@@ -25,7 +25,7 @@ export const sectionSchema = new Schema<ISection>(
       type: [chapterSchema],
       required: true,
       validate: {
-        validator: function (v: IChapter[]) {
+        validator: function (v: Chapter[]) {
           return v.length > 0; // Ensure each section has at least one chapter
         },
         message: 'A section must contain at least one chapter.',
@@ -37,5 +37,4 @@ export const sectionSchema = new Schema<ISection>(
   }
 );
 
-// Section Model
-export const Section = mongoose.model<ISection>('Section', sectionSchema);
+export const SectionModel = model<Section>('Section', sectionSchema);

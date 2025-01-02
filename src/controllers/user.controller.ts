@@ -1,12 +1,12 @@
 import { asyncHandler } from '../utils/async-handler';
 import apiResponse from '../utils/api-response';
-import { User } from '../models/user.model';
+import { UserModel } from '../models/user.model';
 import { CookieOptions, Request, Response } from 'express';
-import { VerificationToken } from '../models/verificationtoken.model';
+import { VerificationTokenModel } from '../models/verificationtoken.model';
 import crypto from 'crypto';
 import envVariables from '../config';
 import { sendEmail } from '../utils/send-email';
-import { RefreshToken } from '../models/refreshtoken.model';
+import { RefreshTokenModel } from '../models/refreshtoken.model';
 import { DecodedToken } from '../types';
 import jwt from 'jsonwebtoken';
 import { ErrorCodes, HttpStatusCodes } from '../config/status-codes';
@@ -36,7 +36,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Check for existing user
-  const existingUser = await User.findOne({ email });
+  const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
     return apiResponse(res, {
       success: false,
@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Create unverified user
-  const user = await User.create({
+  const user = await UserModel.create({
     fullName,
     email,
     password,
@@ -57,7 +57,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Token expires in 15 mins
 
   // Save verification token in the database
-  await VerificationToken.create({
+  await VerificationTokenModel.create({
     user: user._id,
     token,
     expiresAt,
@@ -71,7 +71,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   if (!emailResponse.success) {
     // Roll back user creation if email fails to send
     await user.deleteOne();
-    await VerificationToken.deleteOne({ user: user._id });
+    await VerificationTokenModel.deleteOne({ user: user._id });
     return apiResponse(res, {
       success: false,
       message: 'Failed to sent verification email',
@@ -101,7 +101,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Find token in the database
-  const verificationToken = await VerificationToken.findOne({ token });
+  const verificationToken = await VerificationTokenModel.findOne({ token });
   if (!verificationToken || verificationToken.expiresAt < new Date()) {
     return apiResponse(res, {
       success: false,
@@ -112,7 +112,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Activate user
-  const user = await User.findByIdAndUpdate(
+  const user = await UserModel.findByIdAndUpdate(
     verificationToken.user,
     { isVerified: true },
     { new: true }
@@ -128,7 +128,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Delete the token
-  await VerificationToken.deleteOne({ token });
+  await VerificationTokenModel.deleteOne({ token });
 
   return apiResponse(res, {
     success: true,
@@ -150,7 +150,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Check if the user exists
-  const user = await User.findOne({ email });
+  const user = await UserModel.findOne({ email });
   if (!user) {
     return apiResponse(res, {
       success: false,
@@ -180,7 +180,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Delete the existing refresh token for this user
-  await RefreshToken.deleteOne({ user: user._id });
+  await RefreshTokenModel.deleteOne({ user: user._id });
 
   // Generate access and refresh tokens
   const accessToken = user.generateAccessToken();
@@ -189,7 +189,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const refreshTokenExpiry = envVariables.tokens.refreshToken.expiry;
   const expiresAt = new Date(Date.now() + Number(refreshTokenExpiry) * 1000);
 
-  await RefreshToken.create({
+  await RefreshTokenModel.create({
     user: user._id,
     token: refreshToken,
     expiresAt: expiresAt,
@@ -239,7 +239,7 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
     });
   }
   // Find and delete the refresh token from the database
-  await RefreshToken.findOneAndDelete({ token: refreshToken });
+  await RefreshTokenModel.findOneAndDelete({ token: refreshToken });
 
   //options
   const options: CookieOptions = {
@@ -273,38 +273,109 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  try {
-    // Verify the token
-    const decodedToken = jwt.verify(
-      accessToken,
-      envVariables.tokens.accessToken.secret!
-    ) as DecodedToken;
+  // Verify the token
+  const decodedToken = jwt.verify(
+    accessToken,
+    envVariables.tokens.accessToken.secret!
+  ) as DecodedToken;
 
-    // Find the user by ID from the decoded token
-    const user = await User.findById(decodedToken._id).select('-password');
-
-    if (!user) {
-      return apiResponse(res, {
-        success: false,
-        message: 'User not found',
-        statusCode: HttpStatusCodes.NOT_FOUND,
-      });
-    }
-
-    // Send the user profile in the response
-    return apiResponse(res, {
-      success: true,
-      message: 'User profile retrieved successfully',
-      data: user,
-      statusCode: HttpStatusCodes.OK,
-    });
-  } catch (error) {
+  if (!decodedToken) {
     return apiResponse(res, {
       success: false,
-      message: 'Invalid token',
+      message: 'User not found',
+      statusCode: HttpStatusCodes.NOT_FOUND,
+    });
+  }
+
+  // Find the user by ID from the decoded token
+  const user = await UserModel.findById(decodedToken._id).select('-password');
+
+  if (!user) {
+    return apiResponse(res, {
+      success: false,
+      message: 'User not found',
+      statusCode: HttpStatusCodes.NOT_FOUND,
+    });
+  }
+
+  // Send the user profile in the response
+  return apiResponse(res, {
+    success: true,
+    message: 'User profile retrieved successfully',
+    data: user,
+    statusCode: HttpStatusCodes.OK,
+  });
+});
+
+const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return apiResponse(res, {
+      success: false,
+      message: 'Refresh token missing',
       statusCode: HttpStatusCodes.UNAUTHORIZED,
     });
   }
+
+  const storedToken = await RefreshTokenModel.findOne({ token: refreshToken });
+
+  if (!storedToken) {
+    return apiResponse(res, {
+      success: false,
+      message: 'Invalid refresh token',
+      statusCode: HttpStatusCodes.FORBIDDEN,
+    });
+  }
+
+  const decodedToken = jwt.verify(
+    refreshToken,
+    envVariables.tokens.refreshToken.expiry
+  ) as DecodedToken;
+
+  if (!decodedToken) {
+    return apiResponse(res, {
+      success: false,
+      message: 'Invalid refresh token',
+      statusCode: HttpStatusCodes.FORBIDDEN,
+    });
+  }
+
+  // find the user by decoded token
+  const user = await UserModel.findById(decodedToken._id).select('-password');
+
+  if (!user) {
+    return apiResponse(res, {
+      success: false,
+      message: 'User not found',
+      statusCode: HttpStatusCodes.NOT_FOUND,
+    });
+  }
+
+  // generate access token
+
+  const accessToken = user.generateAccessToken();
+
+  //options
+  const options: CookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+    sameSite: 'none', // Adjust based on your frontend-backend setup
+    path: '/', // Cookies will be available site-wide
+  };
+
+  return apiResponse(res.cookie('accessToken', accessToken, options), {
+    success: true,
+    message: 'Access token refreshed',
+    statusCode: HttpStatusCodes.OK,
+  });
 });
 
-export { registerUser, verifyEmail, loginUser, logoutUser, getUserProfile };
+export {
+  registerUser,
+  verifyEmail,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  refreshAccessToken,
+};
