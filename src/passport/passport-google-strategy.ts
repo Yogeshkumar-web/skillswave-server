@@ -1,6 +1,6 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import passport from 'passport';
-import { User } from '../models/user.model';
+import { UserModel } from '../models/user.model';
 import envVariables from '../config';
 
 // Google OAuth configuration
@@ -28,10 +28,10 @@ passport.use(
         }
 
         // Check if user exists in the database
-        let user = await User.findOne({ email });
+        let user = await UserModel.findOne({ email });
         if (!user) {
           // Create a new user in the database
-          user = await User.create({
+          user = await UserModel.create({
             fullName: name,
             email,
             isVerified: true,

@@ -1,6 +1,6 @@
 import { Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import passport from 'passport';
-import { User } from '../models/user.model';
+import { UserModel } from '../models/user.model';
 import envVariables from '../config';
 import { Request } from 'express';
 import { JwtPayload } from '../types';
@@ -20,7 +20,7 @@ passport.use(
   new JwtStrategy(options, async (jwtPayload: JwtPayload, done) => {
     try {
       // Fetch user from the database
-      const user = await User.findById(jwtPayload._id).select('-password');
+      const user = await UserModel.findById(jwtPayload._id).select('-password');
 
       if (!user) {
         console.error('User not found for the provided JWT payload.');
