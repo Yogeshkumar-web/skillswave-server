@@ -9,11 +9,11 @@ export interface AuthenticatedRequest extends Request {
 // Function to extract user information from the request
 export const getAuth = (
   req: AuthenticatedRequest
-): { userId: string; email: string; role: string } => {
+): { _id: string; email: string; role: string } => {
   // Check if req.user exists and contains necessary fields
-  if (req.user && req.user.userId && req.user.email && req.user.role) {
+  if (req.user && req.user._id && req.user.email && req.user.role) {
     return {
-      userId: req.user.userId,
+      _id: req.user._id,
       email: req.user.email,
       role: req.user.role,
     };

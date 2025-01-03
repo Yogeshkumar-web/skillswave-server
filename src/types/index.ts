@@ -88,7 +88,7 @@ export interface Transaction extends Document {
 
 // Define the User document interface
 export interface User extends Document {
-  userId?: string;
+  _id: string;
   fullName: string;
   email: string;
   password?: string;

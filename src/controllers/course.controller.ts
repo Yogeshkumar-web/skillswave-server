@@ -213,7 +213,7 @@ export const updateCourse = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
     const { courseId } = req.params;
     const updateData = { ...req.body };
-    const { userId } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
+    const { _id } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
 
     // Find the course by courseId
     const course = await CourseModel.findOne({ courseId });
@@ -226,7 +226,7 @@ export const updateCourse = asyncHandler(
     }
 
     // Check authorization: Ensure the logged-in user is the course owner (teacher)
-    if (course.teacherId !== userId) {
+    if (course.teacherId !== _id) {
       return apiResponse(res, {
         success: false,
         message: 'Not authorized to update this course',
@@ -300,7 +300,7 @@ export const updateCourse = asyncHandler(
 export const deleteCourse = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
     const { courseId } = req.params; // Extract courseId from URL params
-    const { userId } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
+    const { _id } = getAuth(req as AuthenticatedRequest); // Get authenticated user's ID
 
     // Find the course by its courseId
     const course = await CourseModel.findOne({ courseId });
@@ -313,7 +313,7 @@ export const deleteCourse = asyncHandler(
     }
 
     // Check if the logged-in user is the teacher for this course
-    if (course.teacherId !== userId) {
+    if (course.teacherId !== _id) {
       return apiResponse(res, {
         success: false,
         message: 'Not authorized to delete this course',
