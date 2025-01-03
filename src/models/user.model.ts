@@ -6,7 +6,6 @@ import { User } from '../types';
 
 export const userSchema = new Schema<User>(
   {
-    userId: { type: String, unique: true },
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },

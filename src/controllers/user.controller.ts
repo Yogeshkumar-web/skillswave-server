@@ -67,7 +67,12 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const verificationUrl = `${envVariables.app.clientUrl}/verify-email?token=${token}`;
 
   // Send the email
-  const emailResponse = await sendEmail({ email, fullName, verificationUrl });
+  const emailFrom = envVariables.app.emailFrom;
+  const emailResponse = await sendEmail({
+    email: emailFrom,
+    fullName,
+    verificationUrl,
+  });
   if (!emailResponse.success) {
     // Roll back user creation if email fails to send
     await user.deleteOne();

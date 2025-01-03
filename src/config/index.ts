@@ -28,6 +28,7 @@ const envSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
   GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
+  EMAIL_FROM: Joi.string().email().required(),
 }).unknown();
 
 // Validate and extract variables
@@ -48,6 +49,7 @@ export default {
     apiPrefix: validatedEnv.API_PREFIX,
     morgan: validatedEnv.MORGAN,
     clientUrl: validatedEnv.CLIENT_URL,
+    emailFrom: validatedEnv.EMAIL_FROM,
   },
   cors: {
     origin: validatedEnv.CORS_ORIGIN,
