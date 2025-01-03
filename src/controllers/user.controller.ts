@@ -64,7 +64,7 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
   });
 
   // Construct the verification URL
-  const verificationUrl = `${envVariables.app.clientUrl}/verify-email?token=${token}`;
+  const verificationUrl = `${envVariables.app.clientUrl}/auth/verify-email?token=${token}`;
 
   // Send the email
   const emailFrom = envVariables.app.emailFrom;
