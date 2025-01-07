@@ -20,9 +20,9 @@ router.route('/register').post(registerUser);
 router.route('/verify-email').post(verifyEmail);
 router.route('/login').post(loginUser);
 router.route('/refresh-token').post(refreshAccessToken);
+router.route('/logout').post(logoutUser);
 
 // Private Routes
-privateRoutes.route('/logout').post(logoutUser);
 privateRoutes.route('/profile').get(getUserProfile);
 
 // merge private route into main route

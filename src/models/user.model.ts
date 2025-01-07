@@ -18,7 +18,6 @@ export const userSchema = new Schema<User>(
       enum: ['admin', 'student', 'teacher', 'user', 'writer'],
       default: 'user',
     },
-    posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     enrolledCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }], // Relationship with Course
     transactions: [{ type: Schema.Types.ObjectId, ref: 'Transaction' }], // Relationship with Transaction

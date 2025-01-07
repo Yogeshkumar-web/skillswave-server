@@ -97,7 +97,6 @@ export interface User extends Document {
   providerId?: string;
   image?: string;
   role: 'admin' | 'teacher' | 'student' | 'user' | 'writer';
-  posts?: mongoose.Types.ObjectId[];
   comments?: mongoose.Types.ObjectId[];
   enrolledCourses?: mongoose.Types.ObjectId[];
   transactions?: mongoose.Types.ObjectId[];
